@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/jamoa-icon-256.png" width="128" alt="Jamoa logo">
+</p>
+
 # Jamoa (자모아)
 
 > 자모(Jamo)를 모아(Moa) — 풀어쓰기(NFD)된 한글 파일명을 모아쓰기(NFC)로.
