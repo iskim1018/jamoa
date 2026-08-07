@@ -271,6 +271,11 @@ button.ghost {
   z-index: 20;
 }
 
+/* .hidden보다 뒤에 선언되므로 display:flex가 이기지 않게 명시 */
+.overlay.hidden {
+  display: none;
+}
+
 .dialog {
   background: var(--card);
   border: 1px solid var(--border);
