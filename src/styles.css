@@ -1,0 +1,286 @@
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1c1c1e;
+  background-color: #f5f5f7;
+  -webkit-font-smoothing: antialiased;
+  --accent: #0a7cff;
+  --card: #ffffff;
+  --border: #e3e3e6;
+  --muted: #7a7a80;
+  --danger: #d93838;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #ececee;
+    background-color: #1e1e20;
+    --card: #29292c;
+    --border: #3a3a3e;
+    --muted: #9a9aa0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px 22px 40px;
+  user-select: none;
+}
+
+h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+h2 {
+  font-size: 0.95rem;
+  margin: 0 0 8px;
+}
+
+.korean-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.section-head h2 {
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  font: inherit;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 12px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.folder-list,
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.folder-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.folder-list li:first-child {
+  border-top: none;
+}
+
+.folder-list .path {
+  flex: 1;
+  background: none;
+  color: inherit;
+  text-align: left;
+  padding: 0;
+  border-radius: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl; /* 긴 경로는 뒷부분(폴더명)이 보이도록 */
+}
+
+.folder-list .path:hover {
+  color: var(--accent);
+  filter: none;
+}
+
+.folder-list .recursive {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.folder-list .remove {
+  background: transparent;
+  color: var(--danger);
+  padding: 4px 8px;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.history-list li {
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.history-list li:first-child {
+  border-top: none;
+}
+
+.history-list .change {
+  word-break: break-all;
+}
+
+.history-list .from {
+  color: var(--danger);
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.history-list .to {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.history-list .meta {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.empty {
+  color: var(--muted);
+  margin: 6px 0;
+}
+
+.hidden {
+  display: none;
+}
+
+/* 토글 스위치 */
+.switch {
+  position: relative;
+  width: 46px;
+  height: 27px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #c8c8cd;
+  border-radius: 27px;
+  transition: background 0.15s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 23px;
+  height: 23px;
+  left: 2px;
+  top: 2px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.switch input:checked + .slider {
+  background: #34c759;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(19px);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 46px;
+  transform: translateX(-50%);
+  background: rgba(30, 30, 32, 0.92);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  z-index: 10;
+}
+
+footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.75rem;
+  background: linear-gradient(transparent, var(--card));
+}

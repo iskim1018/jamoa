@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jamoa</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="main.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Jamoa <span class="korean-name">자모아</span></h1>
+        <p class="subtitle">자모분리(NFD) 파일명을 자동으로 모아쓰기(NFC)로 바꿔줍니다</p>
+      </div>
+      <label class="switch" title="자동 정규화 켜기/끄기">
+        <input type="checkbox" id="enabled-toggle" />
+        <span class="slider"></span>
+      </label>
+    </header>
+
+    <main>
+      <section>
+        <div class="section-head">
+          <h2>감시 폴더</h2>
+        <div class="actions">
+          <button id="scan-now" class="ghost">지금 전체 검사</button>
+          <button id="add-folder">폴더 추가</button>
+        </div>
+        </div>
+        <ul id="folder-list" class="folder-list"></ul>
+        <p id="folder-empty" class="empty hidden">
+          감시할 폴더가 없습니다. “폴더 추가”로 다운로드 폴더 등을 등록하세요.
+        </p>
+      </section>
+
+      <section>
+        <h2>옵션</h2>
+        <label class="option-row">
+          <input type="checkbox" id="autostart-toggle" />
+          로그인 시 자동 시작
+        </label>
+      </section>
+
+      <section>
+        <h2>최근 변환 기록</h2>
+        <ul id="history-list" class="history-list"></ul>
+        <p id="history-empty" class="empty hidden">아직 변환된 파일이 없습니다.</p>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <footer>창을 닫아도 메뉴바/트레이에서 계속 동작합니다.</footer>
+  </body>
+</html>
