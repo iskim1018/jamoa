@@ -133,6 +133,31 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  const showUpdateModal = (version) => {
+    $("#update-version").textContent = `v${version}`;
+    $("#update-overlay").classList.remove("hidden");
+  };
+  $("#update-later").addEventListener("click", () =>
+    $("#update-overlay").classList.add("hidden")
+  );
+  $("#update-now").addEventListener("click", async () => {
+    const button = $("#update-now");
+    button.disabled = true;
+    button.textContent = "다운로드 중…";
+    try {
+      await invoke("install_update"); // 성공하면 앱이 재시작되므로 복귀하지 않는다
+    } catch (err) {
+      $("#update-overlay").classList.add("hidden");
+      button.disabled = false;
+      button.textContent = "업데이트";
+      toast(`업데이트 실패: ${err}`);
+    }
+  });
+  await listen("update-available", (event) => showUpdateModal(event.payload));
+  // 웹뷰 로드 전에 확인이 끝나 이벤트를 놓친 경우를 대비한 폴백
+  const pendingUpdate = await invoke("get_pending_update");
+  if (pendingUpdate) showUpdateModal(pendingUpdate);
+
   await listen("config-changed", refreshState);
   await listen("rename-recorded", refreshHistory);
   await listen("scan-done", (event) => {

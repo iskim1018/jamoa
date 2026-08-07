@@ -12,8 +12,12 @@ use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, WindowEvent, Wry};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
-use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_updater::UpdaterExt;
+
+struct UpdateState {
+    pending: Mutex<Option<tauri_plugin_updater::Update>>,
+}
 
 struct TrayHandles {
     enabled_item: Mutex<Option<CheckMenuItem<Wry>>>,
@@ -169,38 +173,55 @@ fn reveal_path(path: String) {
 fn spawn_update_check(app: &AppHandle) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
-        let Ok(updater) = app.updater() else { return };
-        let Ok(Some(update)) = updater.check().await else {
-            return;
+        let updater = match app.updater() {
+            Ok(u) => u,
+            Err(e) => {
+                eprintln!("[updater] init error: {e}");
+                return;
+            }
         };
+        let update = match updater.check().await {
+            Ok(Some(u)) => u,
+            Ok(None) => {
+                eprintln!("[updater] no update available");
+                return;
+            }
+            Err(e) => {
+                eprintln!("[updater] check error: {e}");
+                return;
+            }
+        };
+        eprintln!("[updater] update found: v{}", update.version);
         let version = update.version.clone();
-        let app2 = app.clone();
-        app.dialog()
-            .message(format!(
-                "새 버전 v{version}이 나왔습니다. 지금 업데이트할까요?\n(다운로드 후 자동으로 재시작됩니다)"
-            ))
-            .title("Jamoa 업데이트")
-            .buttons(MessageDialogButtons::OkCancelCustom(
-                "업데이트".into(),
-                "나중에".into(),
-            ))
-            .show(move |confirmed| {
-                if !confirmed {
-                    return;
-                }
-                tauri::async_runtime::spawn(async move {
-                    match update.download_and_install(|_, _| {}, || {}).await {
-                        Ok(()) => app2.restart(),
-                        Err(e) => {
-                            app2.dialog()
-                                .message(format!("업데이트에 실패했습니다: {e}"))
-                                .title("Jamoa 업데이트")
-                                .show(|_| {});
-                        }
-                    }
-                });
-            });
+        // Accessory(메뉴바 상주) 모드에선 부모 창 없는 네이티브 알림이 표시되지
+        // 않을 수 있어, 웹뷰 안의 모달로 사용자 확인을 받는다
+        *app.state::<UpdateState>().pending.lock().unwrap() = Some(update);
+        show_main_window(&app);
+        let _ = app.emit("update-available", version);
     });
+}
+
+#[tauri::command]
+fn get_pending_update(app: AppHandle) -> Option<String> {
+    app.state::<UpdateState>()
+        .pending
+        .lock()
+        .unwrap()
+        .as_ref()
+        .map(|u| u.version.clone())
+}
+
+#[tauri::command]
+async fn install_update(app: AppHandle) -> Result<(), String> {
+    let update = app.state::<UpdateState>().pending.lock().unwrap().take();
+    let Some(update) = update else {
+        return Err("설치할 업데이트가 없습니다".into());
+    };
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|e| e.to_string())?;
+    app.restart();
 }
 
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
@@ -289,7 +310,9 @@ pub fn run() {
             set_recursive,
             set_autostart,
             scan_now,
-            reveal_path
+            reveal_path,
+            get_pending_update,
+            install_update
         ])
         .setup(|app| {
             let handle = app.handle().clone();
@@ -313,6 +336,9 @@ pub fn run() {
             });
             app.manage(TrayHandles {
                 enabled_item: Mutex::new(None),
+            });
+            app.manage(UpdateState {
+                pending: Mutex::new(None),
             });
 
             engine::spawn_worker(handle.clone(), job_rx);
