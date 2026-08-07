@@ -18,7 +18,8 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            enabled: true,
+            // 첫 실행 시 사용자가 감시 폴더를 확인하고 직접 켜도록 꺼진 상태로 시작
+            enabled: false,
             folders: Vec::new(),
         }
     }

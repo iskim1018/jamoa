@@ -17,8 +17,11 @@ function formatTime(ms) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+let currentEnabled = false;
+
 async function refreshState() {
   const state = await invoke("get_state");
+  currentEnabled = state.config.enabled;
   $("#enabled-toggle").checked = state.config.enabled;
   $("#autostart-toggle").checked = state.autostart;
 
@@ -85,9 +88,22 @@ async function refreshHistory() {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
-  $("#enabled-toggle").addEventListener("change", (e) =>
-    invoke("set_enabled", { enabled: e.target.checked })
-  );
+  $("#enabled-toggle").addEventListener("change", (e) => {
+    if (e.target.checked) {
+      // 확인을 받기 전까지는 꺼진 상태로 되돌려 둔다
+      e.target.checked = false;
+      $("#confirm-overlay").classList.remove("hidden");
+    } else {
+      invoke("set_enabled", { enabled: false });
+    }
+  });
+  $("#confirm-ok").addEventListener("click", async () => {
+    $("#confirm-overlay").classList.add("hidden");
+    await invoke("set_enabled", { enabled: true });
+  });
+  $("#confirm-cancel").addEventListener("click", () => {
+    $("#confirm-overlay").classList.add("hidden");
+  });
   $("#autostart-toggle").addEventListener("change", async (e) => {
     try {
       await invoke("set_autostart", { enabled: e.target.checked });
@@ -98,7 +114,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
   $("#add-folder").addEventListener("click", async () => {
     const added = await invoke("pick_and_add_folder");
-    if (added) toast("폴더가 추가되었습니다. 초기 검사를 시작합니다.");
+    if (added) {
+      toast(
+        currentEnabled
+          ? "폴더가 추가되었습니다. 초기 검사를 시작합니다."
+          : "폴더가 추가되었습니다. 자동 정규화를 켜면 검사가 시작됩니다."
+      );
+    }
   });
   $("#scan-now").addEventListener("click", async () => {
     const button = $("#scan-now");

@@ -101,10 +101,12 @@ async fn pick_and_add_folder(app: AppHandle) -> Result<bool, String> {
     }
     engine::rebuild_watcher(&app);
     let _ = app.emit("config-changed", ());
-    let app2 = app.clone();
-    std::thread::spawn(move || {
-        engine::scan_dir(&app2, &path, false);
-    });
+    if state.enabled.load(Ordering::Relaxed) {
+        let app2 = app.clone();
+        std::thread::spawn(move || {
+            engine::scan_dir(&app2, &path, false);
+        });
+    }
     Ok(true)
 }
 
@@ -132,7 +134,7 @@ fn set_recursive(app: AppHandle, path: String, recursive: bool) {
     }
     engine::rebuild_watcher(&app);
     let _ = app.emit("config-changed", ());
-    if recursive {
+    if recursive && state.enabled.load(Ordering::Relaxed) {
         let app2 = app.clone();
         std::thread::spawn(move || {
             engine::scan_dir(&app2, Path::new(&path), true);
