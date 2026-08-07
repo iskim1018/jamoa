@@ -230,9 +230,20 @@ fn build_tray(app: &AppHandle) -> tauri::Result<()> {
 
     *app.state::<TrayHandles>().enabled_item.lock().unwrap() = Some(enabled_item);
 
-    TrayIconBuilder::with_id("main-tray")
+    let tray_builder = TrayIconBuilder::with_id("main-tray");
+    // macOS 메뉴바는 단색 템플릿 아이콘 관례를 따른다 (시스템이 라이트/다크 자동 반전)
+    #[cfg(target_os = "macos")]
+    let tray_builder = tray_builder
+        .icon(tauri::image::Image::from_bytes(include_bytes!(
+            "../icons/tray-template@2x.png"
+        ))?)
+        .icon_as_template(true);
+    #[cfg(not(target_os = "macos"))]
+    let tray_builder = tray_builder
         .icon(app.default_window_icon().unwrap().clone())
-        .icon_as_template(false)
+        .icon_as_template(false);
+
+    tray_builder
         .tooltip("Jamoa — 한글 파일명 자동 정규화")
         .menu(&menu)
         .show_menu_on_left_click(true)
