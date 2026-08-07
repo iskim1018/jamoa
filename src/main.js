@@ -133,12 +133,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  const showUpdateModal = (version) => {
+  const showUpdateBanner = (version) => {
     $("#update-version").textContent = `v${version}`;
-    $("#update-overlay").classList.remove("hidden");
+    $("#update-banner").classList.remove("hidden");
   };
   $("#update-later").addEventListener("click", () =>
-    $("#update-overlay").classList.add("hidden")
+    // 배너만 닫는다 — 트레이 배지와 메뉴 항목은 유지되므로 언제든 다시 진행 가능
+    $("#update-banner").classList.add("hidden")
   );
   $("#update-now").addEventListener("click", async () => {
     const button = $("#update-now");
@@ -147,16 +148,19 @@ window.addEventListener("DOMContentLoaded", async () => {
     try {
       await invoke("install_update"); // 성공하면 앱이 재시작되므로 복귀하지 않는다
     } catch (err) {
-      $("#update-overlay").classList.add("hidden");
       button.disabled = false;
       button.textContent = "업데이트";
       toast(`업데이트 실패: ${err}`);
     }
   });
-  await listen("update-available", (event) => showUpdateModal(event.payload));
+  await listen("update-available", (event) => showUpdateBanner(event.payload));
+  await listen("update-none", () => toast("현재 최신 버전입니다."));
+  await listen("update-check-failed", (event) =>
+    toast(`업데이트 확인 실패: ${event.payload}`)
+  );
   // 웹뷰 로드 전에 확인이 끝나 이벤트를 놓친 경우를 대비한 폴백
   const pendingUpdate = await invoke("get_pending_update");
-  if (pendingUpdate) showUpdateModal(pendingUpdate);
+  if (pendingUpdate) showUpdateBanner(pendingUpdate);
 
   await listen("config-changed", refreshState);
   await listen("rename-recorded", refreshHistory);

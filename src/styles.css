@@ -260,6 +260,30 @@ button.ghost {
   transform: translateX(19px);
 }
 
+/* 업데이트 안내 배너 */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(10, 124, 255, 0.09);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 0.9rem;
+}
+
+.update-banner.hidden {
+  display: none;
+}
+
+.update-banner .actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* 확인 대화상자 */
 .overlay {
   position: fixed;

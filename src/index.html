@@ -19,6 +19,16 @@
       </label>
     </header>
 
+    <div id="update-banner" class="update-banner hidden">
+      <span>
+        새 버전 <b id="update-version"></b>이 나왔습니다. 업데이트 후 자동으로 재시작됩니다.
+      </span>
+      <div class="actions">
+        <button id="update-later" class="ghost">나중에</button>
+        <button id="update-now">업데이트</button>
+      </div>
+    </div>
+
     <main>
       <section>
         <div class="section-head">
@@ -60,20 +70,6 @@
         <div class="dialog-actions">
           <button id="confirm-cancel" class="ghost">취소</button>
           <button id="confirm-ok">켜기</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="update-overlay" class="overlay hidden">
-      <div class="dialog">
-        <h3>새 버전이 나왔습니다</h3>
-        <p>
-          Jamoa <span id="update-version"></span> 업데이트를 설치할까요?
-          다운로드 후 자동으로 재시작됩니다.
-        </p>
-        <div class="dialog-actions">
-          <button id="update-later" class="ghost">나중에</button>
-          <button id="update-now">업데이트</button>
         </div>
       </div>
     </div>

@@ -12,6 +12,7 @@
       {
         "label": "main",
         "title": "Jamoa — 한글 파일명 정규화",
+        "visible": false,
         "width": 620,
         "height": 720,
         "minWidth": 480,
