@@ -12,7 +12,8 @@ use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::TrayIconBuilder;
 use tauri::{AppHandle, Emitter, Manager, WindowEvent, Wry};
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
-use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_dialog::{DialogExt, MessageDialogButtons};
+use tauri_plugin_updater::UpdaterExt;
 
 struct TrayHandles {
     enabled_item: Mutex<Option<CheckMenuItem<Wry>>>,
@@ -164,6 +165,44 @@ fn reveal_path(path: String) {
     let _ = tauri_plugin_opener::open_path(path, None::<String>);
 }
 
+/// 시작 시 새 버전을 확인하고, 있으면 사용자 확인 후 설치·재시작한다.
+fn spawn_update_check(app: &AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        let Ok(updater) = app.updater() else { return };
+        let Ok(Some(update)) = updater.check().await else {
+            return;
+        };
+        let version = update.version.clone();
+        let app2 = app.clone();
+        app.dialog()
+            .message(format!(
+                "새 버전 v{version}이 나왔습니다. 지금 업데이트할까요?\n(다운로드 후 자동으로 재시작됩니다)"
+            ))
+            .title("Jamoa 업데이트")
+            .buttons(MessageDialogButtons::OkCancelCustom(
+                "업데이트".into(),
+                "나중에".into(),
+            ))
+            .show(move |confirmed| {
+                if !confirmed {
+                    return;
+                }
+                tauri::async_runtime::spawn(async move {
+                    match update.download_and_install(|_, _| {}, || {}).await {
+                        Ok(()) => app2.restart(),
+                        Err(e) => {
+                            app2.dialog()
+                                .message(format!("업데이트에 실패했습니다: {e}"))
+                                .title("Jamoa 업데이트")
+                                .show(|_| {});
+                        }
+                    }
+                });
+            });
+    });
+}
+
 fn build_tray(app: &AppHandle) -> tauri::Result<()> {
     let enabled = app
         .state::<EngineState>()
@@ -225,6 +264,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
             None,
@@ -267,6 +307,7 @@ pub fn run() {
             engine::spawn_worker(handle.clone(), job_rx);
             engine::rebuild_watcher(&handle);
             build_tray(&handle)?;
+            spawn_update_check(&handle);
 
             // 시작 시 밀린 파일 1회 정리
             if enabled {
