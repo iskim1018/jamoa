@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Secrets
+.env
+.env.*
+!.env.example
+
 # Local tool state
 .omc/
 .playwright-mcp/
