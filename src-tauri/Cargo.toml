@@ -1,6 +1,6 @@
 [package]
 name = "jamoa"
-version = "0.2.0"
+version = "0.3.0"
 description = "Jamoa(자모아) — 한글 파일명 NFC/NFD 자동 정규화 트레이 앱"
 authors = ["iskim"]
 edition = "2021"
